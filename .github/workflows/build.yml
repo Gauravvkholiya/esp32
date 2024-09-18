@@ -8,27 +8,29 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3  # Update to v3
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false  # Prevent GitHub Actions from modifying credentials
 
-      # Get the current date (new method)
+      # Get the current date
       - name: Get Date
         id: get-date
-        run: echo "DATE=$(date -u +'%Y%m%d')" >> $GITHUB_ENV  # Store in environment variable
+        run: echo "DATE=$(date -u +'%Y%m%d')" >> $GITHUB_ENV
 
-      # Cache the Buildozer global directory
+      # Cache Buildozer global directory
       - name: Cache Buildozer global directory
-        uses: actions/cache@v3  # Update to v3
+        uses: actions/cache@v3
         with:
           path: .buildozer_global
           key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
       # Cache Buildozer directory using the date
-      - uses: actions/cache@v3  # Update to v3
+      - uses: actions/cache@v3
         with:
           path: .buildozer
           key: ${{ runner.os }}-${{ env.DATE }}-${{ hashFiles('buildozer.spec') }}
 
-      # Build the project using Buildozer
+      # Build with Buildozer
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
@@ -36,9 +38,15 @@ jobs:
           command: buildozer android debug
           buildozer_version: stable
 
-      # Upload the artifacts (update to v3)
+      # Upload artifacts
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3  # Update to v3
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: ${{ steps.buildozer.outputs.filename }}
+
+      # Clean up Git config
+      - name: Manually clean up Git config
+        run: |
+          git config --global --unset http.https://github.com/.extraheader || true
+          git config --global --unset core.sshCommand || true
