@@ -1,0 +1,12 @@
+# simple.kv file
+
+BoxLayout:
+    orientation: 'vertical'
+
+    TextInput:
+        id: text_input
+        hint_text: "Enter some text"
+
+    Button:
+        text: "Submit"
+        on_press: app.on_button_press()
